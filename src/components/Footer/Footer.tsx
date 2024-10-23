@@ -1,61 +1,57 @@
 import React from 'react';
-import cn from 'classnames';
+import classNames from 'classnames';
 
-import { SelectedType } from '../../types/SelectedType';
-import { Todo } from '../../types/Todo';
+import { Filter } from '../../FilterEnum';
 
-type Props = {
-  todos: Todo[];
-  selectedOption: SelectedType;
-  setSelectedOption: React.Dispatch<React.SetStateAction<SelectedType>>;
+type FooterProps = {
+  currFilter: Filter;
+  activeTodosCount: number;
+  hasCompletedTodos: boolean;
+  onFilterClick: (newFilter: Filter) => void;
+  onClearCompletedTodos: () => void;
 };
 
-export const Footer: React.FC<Props> = ({
-  selectedOption,
-  setSelectedOption,
-  todos,
-}) => {
-  const filtersOptionName = Object.values(SelectedType);
-  const notCompleteedCount = todos.filter(todo => !todo.completed).length;
+export const Footer: React.FC<FooterProps> = ({
+  currFilter,
+  activeTodosCount,
+  hasCompletedTodos,
+  onFilterClick,
+  onClearCompletedTodos,
+}) => (
+  <footer className="todoapp__footer" data-cy="Footer">
+    <span className="todo-count" data-cy="TodosCounter">
+      {`${activeTodosCount} items left`}
+    </span>
 
-  return (
-    <>
-      <footer className="todoapp__footer" data-cy="Footer">
-        <span className="todo-count" data-cy="TodosCounter">
-          {notCompleteedCount} items left
-        </span>
+    <nav className="filter" data-cy="Filter">
+      {Object.values(Filter).map(filter => {
+        const capitalFilter =
+          filter[0].toUpperCase() + filter.slice(1).toLowerCase();
 
-        <nav className="filter" data-cy="Filter">
-          {filtersOptionName.map(filterElement => {
-            const filterActiveUrl =
-              filterElement === SelectedType.ALL
-                ? '#/'
-                : `#/${filterElement.toLowerCase()}`;
+        return (
+          <a
+            key={filter}
+            href={`#/${filter === Filter.All ? '' : filter}`}
+            className={classNames('filter__link', {
+              selected: currFilter === filter,
+            })}
+            data-cy={`FilterLink${capitalFilter}`}
+            onClick={() => onFilterClick(filter)}
+          >
+            {capitalFilter}
+          </a>
+        );
+      })}
+    </nav>
 
-            return (
-              <a
-                key={filterElement}
-                href={filterActiveUrl}
-                className={cn('filter__link', {
-                  selected: filterElement === selectedOption,
-                })}
-                data-cy={`FilterLink${filterElement}`}
-                onClick={() => setSelectedOption(filterElement)}
-              >
-                {filterElement}
-              </a>
-            );
-          })}
-        </nav>
-
-        <button
-          type="button"
-          className="todoapp__clear-completed"
-          data-cy="ClearCompletedButton"
-        >
-          Clear completed
-        </button>
-      </footer>
-    </>
-  );
-};
+    <button
+      type="button"
+      className="todoapp__clear-completed"
+      data-cy="ClearCompletedButton"
+      onClick={onClearCompletedTodos}
+      disabled={!hasCompletedTodos}
+    >
+      Clear completed
+    </button>
+  </footer>
+);
